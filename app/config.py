@@ -14,7 +14,7 @@ DB_PASSWORD = "Passw0rd!"
 # mais la valeur par defaut contient toujours le mot de passe en clair.
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    f"postgresql://helpdesk:{DB_PASSWORD}@db:5432/helpdesk",
+    f"postgresql+psycopg2://helpdesk:{DB_PASSWORD}@db:5432/helpdesk",
 )
 
 JWT_ALGORITHM = "HS256"
