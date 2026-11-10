@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <section class="auth-art reveal">
+    <div class="float-tickets" aria-hidden="true">
+      <div class="ft ft1"><span class="pill s-ouvert">ouvert</span><b>Impossible de me connecter</b><i></i><i class="short"></i></div>
+      <div class="ft ft2"><span class="pill s-en_cours">en cours</span><b>Facture introuvable</b><i></i><i class="short"></i></div>
+      <div class="ft ft3"><span class="pill s-resolu">résolu</span><b>Imprimante bloquée</b><i></i><i class="short"></i></div>
+    </div>
+    <h1>Le support, <span class="grad">sans friction</span>.</h1>
+    <p>Crée un ticket, suis sa progression en temps réel et échange avec l'équipe support.</p>
+  </section>
+
+  <section class="card auth-card reveal" style="--i:1">
+    <h2>Connexion</h2>
+    <p class="muted">Content de te revoir.</p>
+    <form method="post" class="form" autocomplete="on">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" value="{{ email or '' }}" placeholder="toi@exemple.com" required autofocus>
+      </label>
+      <label class="field">
+        <span>Mot de passe</span>
+        <div class="pw">
+          <input type="password" name="password" placeholder="••••••••" required>
+          <button type="button" class="pw-toggle" aria-label="Afficher le mot de passe">👁</button>
+        </div>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
+    </form>
+    <p class="muted center">Pas encore de compte ? <a href="{{ url_for('auth.register') }}">Créer un compte</a></p>
+  </section>
+</div>
+{% endblock %}

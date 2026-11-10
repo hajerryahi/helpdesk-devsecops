@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+{% set labels = {'ouvert': 'Ouverts', 'en_cours': 'En cours', 'resolu': 'Résolus', 'ferme': 'Fermés'} %}
+{% block content %}
+<section class="hero reveal">
+  <div>
+    <p class="eyebrow">Tableau de bord · {{ current_user.role }}</p>
+    <h1>Bonjour <span class="grad">{{ (current_user.full_name or current_user.email).split(' ')[0] }}</span> 👋</h1>
+    <p class="muted">
+      {% if current_user.role == 'client' %}Voici l'état de tes demandes de support.
+      {% else %}Voici les tickets à traiter par l'équipe.{% endif %}
+    </p>
+  </div>
+  <a class="btn btn-primary btn-lg" href="{{ url_for('tickets.new_ticket') }}"><span class="plus">+</span> Nouveau ticket</a>
+</section>
+
+<section class="stats">
+  <div class="stat stat-total reveal" style="--i:0">
+    <span class="stat-label">Total</span>
+    <span class="stat-num" data-count="{{ stats.total }}">0</span>
+    <svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" class="ring-bg"/><circle cx="18" cy="18" r="15.9" class="ring-fg" style="--p:100"/></svg>
+  </div>
+  {% for s in statuses %}
+  <a class="stat stat-{{ s }} reveal {{ 'is-active' if status == s }}" style="--i:{{ loop.index }}" href="{{ url_for('tickets.dashboard', status=('' if status == s else s)) }}">
+    <span class="stat-label">{{ labels[s] }}</span>
+    <span class="stat-num" data-count="{{ stats[s] }}">0</span>
+    {% set pct = ((stats[s] / stats.total) * 100) | round | int if stats.total else 0 %}
+    <svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" class="ring-bg"/><circle cx="18" cy="18" r="15.9" class="ring-fg" style="--p:{{ pct }}"/></svg>
+  </a>
+  {% endfor %}
+</section>
+
+<form class="search reveal" style="--i:2" method="get" action="{{ url_for('tickets.dashboard') }}">
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <input type="search" name="q" value="{{ term }}" placeholder="Rechercher un ticket par titre ou description…">
+  <button class="btn btn-primary" type="submit">Rechercher</button>
+</form>
+
+{% if results is not none %}
+<section class="card results reveal">
+  <div class="card-head">
+    <h2>Résultats pour « {{ term }} »</h2>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('tickets.dashboard') }}">Effacer</a>
+  </div>
+  {% if results %}
+  <table class="table">
+    <thead><tr><th>#</th><th>Titre</th><th>Statut</th><th>Priorité</th><th>Créé par</th></tr></thead>
+    <tbody>
+    {% for r in results %}
+      <tr class="row-in" style="--i:{{ loop.index0 }}">
+        <td class="mono">#{{ r.id }}</td>
+        <td><a href="{{ url_for('tickets.view_ticket', ticket_id=r.id) }}">{{ r.title }}</a></td>
+        <td><span class="pill s-{{ r.status }}">{{ r.status | status_label }}</span></td>
+        <td><span class="prio p-{{ r.priority }}">{{ r.priority }}</span></td>
+        <td class="mono">user {{ r.created_by }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Aucun ticket ne correspond.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="list-head">
+  <h2>{% if status %}{{ labels[status] }}{% else %}Tous les tickets{% endif %} <span class="count">{{ tickets|length }}</span></h2>
+</section>
+
+{% if tickets %}
+<section class="grid">
+  {% for t in tickets %}
+  <a class="tcard reveal" style="--i:{{ loop.index0 % 12 }}" href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
+    <div class="tcard-top">
+      <span class="mono muted">#{{ t.id }}</span>
+      <span class="pill s-{{ t.status }}">{{ t.status | status_label }}</span>
+    </div>
+    <h3>{{ t.title }}</h3>
+    <p class="muted clamp">{{ t.description }}</p>
+    <div class="tcard-foot">
+      <span class="prio p-{{ t.priority }}">{{ t.priority }}</span>
+      <span class="meta">
+        <span class="avatar avatar-xs">{{ t.author.initials }}</span>
+        {{ t.comments|length }} 💬
+      </span>
+    </div>
+    <span class="prio-bar p-{{ t.priority }}"></span>
+  </a>
+  {% endfor %}
+</section>
+{% else %}
+<section class="empty reveal">
+  <svg viewBox="0 0 120 90" width="140" aria-hidden="true" class="bob">
+    <rect x="10" y="20" width="100" height="56" rx="10" fill="none" stroke="currentColor" stroke-width="3"/>
+    <path d="M10 40a8 8 0 0 0 0 16M110 40a8 8 0 0 1 0 16" fill="none" stroke="currentColor" stroke-width="3"/>
+    <path d="M78 22v52" stroke="currentColor" stroke-width="3" stroke-dasharray="4 5"/>
+    <circle cx="40" cy="44" r="3" fill="currentColor"/><circle cx="56" cy="44" r="3" fill="currentColor"/>
+    <path d="M40 58q8 6 16 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+  <h3>Aucun ticket ici</h3>
+  <p class="muted">Tout roule ! Crée un ticket si tu as besoin d'aide.</p>
+</section>
+{% endif %}
+{% endblock %}

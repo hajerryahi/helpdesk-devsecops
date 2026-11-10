@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Ticket #{{ ticket.id }}{% endblock %}
+{% set steps = ['ouvert', 'en_cours', 'resolu', 'ferme'] %}
+{% block content %}
+<a class="back" href="{{ url_for('tickets.dashboard') }}">← Retour au tableau de bord</a>
+
+<div class="ticket-layout">
+  <section class="ticket-main">
+    <article class="card reveal">
+      <div class="ticket-head">
+        <span class="mono muted">#{{ ticket.id }}</span>
+        <span class="pill s-{{ ticket.status }}">{{ ticket.status | status_label }}</span>
+        <span class="prio p-{{ ticket.priority }}">{{ ticket.priority }}</span>
+      </div>
+      <h1>{{ ticket.title }}</h1>
+      <p class="meta-line">
+        <span class="avatar avatar-xs">{{ ticket.author.initials }}</span>
+        {{ ticket.author.full_name or ticket.author.email }} · {{ ticket.created_at.strftime('%d/%m/%Y %H:%M') }}
+      </p>
+
+      <ol class="progress" style="--step:{{ steps.index(ticket.status) }}">
+        {% for s in steps %}
+        <li class="{{ 'done' if loop.index0 <= steps.index(ticket.status) }}"><span></span>{{ s | status_label }}</li>
+        {% endfor %}
+      </ol>
+
+      <div class="desc">{{ ticket.description }}</div>
+    </article>
+
+    <section class="card reveal" style="--i:1" id="comments">
+      <h2>Discussion <span class="count">{{ ticket.comments|length }}</span></h2>
+      <ul class="timeline">
+        {% for c in ticket.comments %}
+        <li class="msg {{ 'msg-staff' if c.author.role != 'client' }}" style="--i:{{ loop.index0 }}">
+          <span class="avatar">{{ c.author.initials }}</span>
+          <div class="bubble">
+            <div class="bubble-head">
+              <b>{{ c.author.full_name or c.author.email }}</b>
+              <span class="role role-{{ c.author.role }}">{{ c.author.role }}</span>
+              <span class="muted small">{{ c.created_at.strftime('%d/%m %H:%M') }}</span>
+            </div>
+            {# F2 - XSS stocke : |safe desactive l'echappement automatique de Jinja2 #}
+            <div class="bubble-body">{{ c.content | safe }}</div>
+          </div>
+        </li>
+        {% else %}
+        <li class="muted">Aucun message pour l'instant.</li>
+        {% endfor %}
+      </ul>
+
+      <form method="post" action="{{ url_for('tickets.add_comment', ticket_id=ticket.id) }}" class="composer">
+        <textarea name="content" rows="3" placeholder="Écrire une réponse…" required></textarea>
+        <button class="btn btn-primary" type="submit">Envoyer</button>
+      </form>
+    </section>
+  </section>
+
+  <aside class="ticket-side">
+    <div class="card reveal" style="--i:2">
+      <h3>Détails</h3>
+      <dl class="details">
+        <dt>Demandeur</dt><dd>{{ ticket.author.email }}</dd>
+        <dt>Assigné à</dt><dd>{{ ticket.assignee.email if ticket.assignee else 'Personne' }}</dd>
+        <dt>Mis à jour</dt><dd>{{ ticket.updated_at.strftime('%d/%m/%Y %H:%M') if ticket.updated_at else '—' }}</dd>
+      </dl>
+    </div>
+
+    {% if current_user.role in ['agent', 'admin'] %}
+    <div class="card reveal" style="--i:3">
+      <h3>Traiter le ticket</h3>
+      <form method="post" action="{{ url_for('tickets.change_status', ticket_id=ticket.id) }}" class="form">
+        <label class="field"><span>Statut</span>
+          <select name="status">
+            {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if s == ticket.status }}>{{ s | status_label }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="field"><span>Assigner à</span>
+          <select name="assigned_to">
+            <option value="none">Personne</option>
+            {% for a in agents %}<option value="{{ a.id }}" {{ 'selected' if ticket.assigned_to == a.id }}>{{ a.email }}</option>{% endfor %}
+          </select>
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Mettre à jour</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if current_user.role == 'admin' or ticket.created_by == current_user.id %}
+    <form method="post" action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}" class="reveal" style="--i:4">
+      <button class="btn btn-danger btn-block" type="submit">Supprimer le ticket</button>
+    </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

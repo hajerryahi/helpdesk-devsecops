@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Administration{% endblock %}
+{% block content %}
+<section class="hero reveal">
+  <div>
+    <p class="eyebrow">Administration</p>
+    <h1>Utilisateurs et <span class="grad">rôles</span></h1>
+    <p class="muted">Gère les comptes et les droits de l'équipe.</p>
+  </div>
+</section>
+
+<section class="stats stats-4">
+  <div class="stat reveal" style="--i:0"><span class="stat-label">Utilisateurs</span><span class="stat-num" data-count="{{ counts.users }}">0</span></div>
+  <div class="stat reveal" style="--i:1"><span class="stat-label">Tickets</span><span class="stat-num" data-count="{{ counts.tickets }}">0</span></div>
+  <div class="stat reveal" style="--i:2"><span class="stat-label">Ouverts</span><span class="stat-num" data-count="{{ counts.open }}">0</span></div>
+  <div class="stat reveal" style="--i:3"><span class="stat-label">Messages</span><span class="stat-num" data-count="{{ counts.comments }}">0</span></div>
+</section>
+
+<section class="card reveal" style="--i:2">
+  <div class="card-head"><h2>Comptes</h2></div>
+  <table class="table">
+    <thead><tr><th>#</th><th>Utilisateur</th><th>Rôle</th><th>Changer le rôle</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr class="row-in" style="--i:{{ loop.index0 }}">
+        <td class="mono">{{ u.id }}</td>
+        <td><span class="user-cell"><span class="avatar avatar-xs">{{ u.initials }}</span>{{ u.full_name or '—' }} <span class="muted">{{ u.email }}</span></span></td>
+        <td><span class="role role-{{ u.role }}">{{ u.role }}</span></td>
+        <td>
+          <form method="post" action="{{ url_for('admin.change_role', user_id=u.id) }}" class="inline-form">
+            <select name="role">
+              {% for r in roles %}<option value="{{ r }}" {{ 'selected' if r == u.role }}>{{ r }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-ghost btn-sm" type="submit">Appliquer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card reveal" style="--i:3">
+  <h2>Importer des utilisateurs (YAML)</h2>
+  <p class="muted">Format : une liste d'objets avec <code>email</code>, <code>full_name</code>, <code>role</code>, <code>password</code>.</p>
+  <form method="post" action="{{ url_for('admin.import_users') }}" enctype="multipart/form-data" class="upload">
+    <label class="drop">
+      <input type="file" name="file" accept=".yml,.yaml" required>
+      <span>Glisse un fichier .yaml ici ou <u>parcours</u></span>
+    </label>
+    <button class="btn btn-primary" type="submit">Importer</button>
+  </form>
+</section>
+{% endblock %}

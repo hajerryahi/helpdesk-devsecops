@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Inscription{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <section class="auth-art reveal">
+    <div class="steps-art" aria-hidden="true">
+      <div class="step-dot" style="--i:0"><span>1</span>Crée ton compte</div>
+      <div class="step-dot" style="--i:1"><span>2</span>Ouvre un ticket</div>
+      <div class="step-dot" style="--i:2"><span>3</span>On s'en occupe</div>
+    </div>
+    <h1>Rejoins <span class="grad">HelpDesk</span>.</h1>
+    <p>Un compte client te permet de créer et suivre tes demandes de support.</p>
+  </section>
+
+  <section class="card auth-card reveal" style="--i:1">
+    <h2>Créer un compte</h2>
+    <p class="muted">Ça prend 20 secondes.</p>
+    <form method="post" class="form">
+      <label class="field">
+        <span>Nom complet</span>
+        <input type="text" name="full_name" placeholder="Prénom Nom" required>
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" placeholder="toi@exemple.com" required>
+      </label>
+      <label class="field">
+        <span>Mot de passe</span>
+        <div class="pw">
+          <input type="password" name="password" placeholder="8 caractères minimum" minlength="8" required>
+          <button type="button" class="pw-toggle" aria-label="Afficher le mot de passe">👁</button>
+        </div>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">Créer mon compte</button>
+    </form>
+    <p class="muted center">Déjà inscrit ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
+  </section>
+</div>
+{% endblock %}

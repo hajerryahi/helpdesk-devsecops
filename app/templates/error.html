@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="error-page reveal">
+  <div class="error-code">{% for ch in code|string %}<span style="--i:{{ loop.index0 }}">{{ ch }}</span>{% endfor %}</div>
+  <h1>{{ title }}</h1>
+  <p class="muted">{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('tickets.dashboard') }}">Retour à l'accueil</a>
+</section>
+{% endblock %}
